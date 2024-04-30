@@ -6,10 +6,13 @@
 		{ x: 482, y: 307, r: 147, fill: '#7300FF' },
 		{ x: 781, y: 91, r: 61, fill: '#0FFB33' },
 		{ x: 668, y: 229, r: 64, fill: '#D400FF' },
+		{ x: 668, y: 329, r: 14, fill: '#D4A0FF' },
 	];
 </script>
 
 <main>
+
+	This is my page. <br><br><br><br>
 	<svg
 		width="1000"
 		height="500"
@@ -23,6 +26,22 @@
 			/>
 		{/each}
 	</svg>
+
+		<svg
+		width="800"
+		height="500"
+	>
+		{#each data as { x, y, r, fill }}
+			<circle
+				cx={x}
+				cy={y}
+				r={r}
+				fill={fill}
+			/>
+		{/each}
+	</svg>
+
+
 </main>
 
 <style>
