@@ -21,9 +21,12 @@ export const data = readable([], async (set) => {
 
 
 
-// Derived store to group data by year
+// Derived store to group data by year and sort the years
 export const dataByYear = derived(data, $data => {
-  return groups($data, d => d.Year).map(([key, values]) => ({ key, values }));
+  const groupedByYear = groups($data, d => d.Year);
+  // Sort the years numerically
+  groupedByYear.sort((a, b) => a[0] - b[0]); // Assuming a[0] and b[0] are the year values
+  return groupedByYear.map(([key, values]) => ({ key, values }));
 });
 
 // Derived store to group data by Grant Type
@@ -32,7 +35,7 @@ export const dataByGrantType = derived(data, $data => {
 });
 
 // A writable store for the current year, allows binding and updating from components
-export const currentYear = writable(2021);
+export const currentYear = writable(2020);
 
 // Derived store to compute the total budget per Grant Type for the selected year
 export const budgetByGrantType = derived([data, currentYear], ([$data, $currentYear]) => {

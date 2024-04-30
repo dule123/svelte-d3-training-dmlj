@@ -3,67 +3,115 @@
   import * as d3 from 'd3';
   import { currentYear, budgetByGrantType, dataByYear } from './stores';
 
+ 
   let radarChartData = [];
 
+  function drawRadialBarChart(data) {
+  const container = d3.select('#radarChart');
+  container.selectAll("svg").remove();  // Clear previous SVG to prevent duplication
 
+  const width = 600, height = 600;
+  const innerRadius = 120, outerRadius = Math.min(width, height) / 2 - 10;
+  const svg = container.append('svg')
+    .attr('width', width)
+    .attr('height', height)
+    .attr('viewBox', [-width / 2, -height / 2, width, height])
+    .style("font", "10px sans-serif");
 
-  function drawRadarChart(data) {
-    const container = d3.select('#radarChart');
-    container.select("svg").remove();  // Clear previous SVG to prevent duplication
+  const x = d3.scaleBand()
+    .domain(data.map(d => d.key))
+    .range([0, 2 * Math.PI])
+    .align(0);
 
-    const svg = container.append('svg')
-      .attr('width', 600)
-      .attr('height', 600);
+  const y = d3.scaleRadial()
+    .domain([0, d3.max(data, d => d.value)])
+    .range([innerRadius, outerRadius]);
 
-    const width = +svg.attr("width");
-    const height = +svg.attr("height");
-    const radius = Math.min(width, height) / 2 - 40;
-    const angleSlice = Math.PI * 2 / data.length;
+  const arc = d3.arc()
+    .innerRadius(innerRadius)
+    .outerRadius(d => y(d.value))
+    .startAngle(d => x(d.key))
+    .endAngle(d => x(d.key) + x.bandwidth())
+    .padAngle(0.01)
+    .padRadius(innerRadius);
 
-    const rScale = d3.scaleLinear()
-      .domain([0, d3.max(data, d => d.value)])
-      .range([0, radius]);
+  const color = d3.scaleOrdinal()
+    .domain(data.map(d => d.key)) // ensure the domain is correctly set
+    .range(d3.schemeSpectral[data.length])
+    .unknown("#ccc"); // default color for unknown keys
 
-    const axes = svg.selectAll(".axis")
-      .data(data)
-      .enter()
-      .append("g")
-      .attr("class", "axis");
+  // Draw the arcs
+  svg.append("g")
+    .selectAll("path")
+    .data(data)
+    .join("path")
+      .attr("fill", d => color(d.key))
+      .attr("d", arc)
+    .append("title")
+      .text(d => `${d.key}: ${d.value.toLocaleString()}`);
 
-    // Draw radial lines
-    axes.append("line")
-      .attr("x1", width / 2)
-      .attr("y1", height / 2)
-      .attr("x2", d => width / 2 + rScale(d.value) * Math.cos(angleSlice * data.indexOf(d) - Math.PI/2))
-      .attr("y2", d => height / 2 + rScale(d.value) * Math.sin(angleSlice * data.indexOf(d) - Math.PI/2))
-      .attr("stroke", "grey");
+  // Draw radial scales
+  const yAxis = svg.append("g")
+    .attr("text-anchor", "middle");
 
-    // Draw labels
-    axes.append("text")
-      .attr("class", "legend")
-      .style("font-size", "12px")
-      .attr("text-anchor", "middle")
+  yAxis.selectAll("circle")
+    .data(y.ticks(5).slice(1))
+    .join("circle")
+      .attr("fill", "none")
+      .attr("stroke", "#ccc")
+      .attr("r", y)
+      .attr("stroke-opacity", 0.5);
+
+  yAxis.selectAll("text")
+    .data(y.ticks(5))
+    .join("text")
+      .attr("y", d => -y(d))
       .attr("dy", "0.35em")
-      .attr("x", d => width / 2 + (radius + 20) * Math.cos(angleSlice * data.indexOf(d) - Math.PI/2))
-      .attr("y", d => height / 2 + (radius + 20) * Math.sin(angleSlice * data.indexOf(d) - Math.PI/2))
-      .text(d => d.key);
+      .text(d => d.toLocaleString())
+      .style("fill", "#333"); // ensuring text is visible
+
+  // Legends and other features as necessary
+  // Add a legend for color coding
+  const legend = svg.append("g")
+    .attr("transform", `translate(${width / 2 - 350}, ${-height / 2 + 250})`);
+
+  legend.selectAll(null)
+    .data(color.domain())
+    .enter()
+    .append("rect")
+    .attr("y", (d, i) => i * 20)
+    .attr("width", 18)
+    .attr("height", 18)
+    .attr("fill", color);
+
+  legend.selectAll(null)
+    .data(color.domain())
+    .enter()
+    .append("text")
+    .attr("x", 24)
+    .attr("y", (d, i) => i * 20 + 9)
+    .attr("dy", "0.35em")
+    .text(d => d)
+    .style("font", "12px sans-serif");
+}
+
+
+
+// Ensure the color scale and other data-dependent elements are set up correctly within the Svelte reactive context:
+$: if (radarChartData.length > 0) {
+  drawRadialBarChart(radarChartData);
+};
+
+onMount(() => {
+  if (radarChartData.length > 0) {
+    drawRadialBarChart(radarChartData);
   }
+});
 
-    // Reactive block to handle updates
-    $: {
-    console.log({ radarChartData });
-
-  };
-
-  onMount(() => {
-    if (radarChartData.length > 0) {
-      drawRadarChart(radarChartData);
-    }
-  });
-
-  // Ensure the radar chart data is updated reactively
-  $: radarChartData = $budgetByGrantType;
+$: radarChartData = $budgetByGrantType;
 </script>
+
+
 
 <h3>Select Year:</h3>
 <select bind:value={$currentYear}>
