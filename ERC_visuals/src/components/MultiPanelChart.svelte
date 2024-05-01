@@ -47,35 +47,39 @@
     // Draw x-axis for each panel
     panels.append("g")
       .attr("transform", `translate(0, ${panelHeight - margin.bottom})`)
-      .call(d3.axisBottom(xScale).tickFormat(d3.format("d")));
+      .call(d3.axisBottom(xScale)
+        .tickFormat((d, i) => i % 2 === 0 ? d : null)); // Show labels for every other year
 
     // Draw y-axis for each panel
     panels.append("g")
       .attr("transform", `translate(${margin.left}, 0)`)
-      .call(d3.axisLeft(yScale).tickFormat(d => `${d} M`)); // Format y-axis ticks to display in millions
+      .call(d3.axisLeft(yScale)
+        .tickFormat(d => `${d}`)
+        .ticks(yScale.domain()[1] / 200)); // Set number of ticks based on domain range
+    // Draw y-axis for each panel
+    // panels.append("g")
+    //   .attr("transform", `translate(${margin.left}, 0)`)
+    //   .call(d3.axisLeft(yScale).tickFormat(d => `${d}`)); // Format y-axis ticks to display in millions
 
     // Add y-axis label to the leftmost panels
-    if (panels.nodes().length > 0) {
-      panels.nodes()[0].append("text")
-        .attr("x", -margin.left)
-        .attr("y", panelHeight / 2)
+    if (panels.nodes().length >= 4) {
+      const leftPanels = panels.filter((d, i) => i === 0 || i === 3);
+
+      leftPanels.append("text")
+        .attr("x", -margin.left -30) // Decrease x-coordinate to move left
+        .attr("y", -85 + panelHeight / 2)
         .attr("text-anchor", "middle")
         .attr("transform", "rotate(-90)")
         .attr("font-weight", "bold")
         .text("Total budget, in M€");
-      panels.nodes()[3].append("text")
-        .attr("x", -margin.left)
-        .attr("y", panelHeight / 2)
-        .attr("text-anchor", "middle")
-        .attr("transform", "rotate(-90)")
-        .attr("font-weight", "bold")
-        .text("Total budget, in M€");
-    }
+
+}
+
 
     // Add titles for each panel
     panels.append("text")
-      .attr("x", panelWidth / 2)
-      .attr("y", margin.top)
+      .attr("x", 10 + panelWidth / 2 )
+      .attr("y", margin.top - 8)
       .attr("text-anchor", "middle")
       .attr("font-weight", "bold")
       .text(d => d.grantType);
