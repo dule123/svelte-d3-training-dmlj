@@ -82,7 +82,7 @@
         .attr("fill", "black")
         .attr("font-size", "12px")
         .text(`Year: ${d.year}\nBudget: ${d.value}`);
-    }
+    
 
 
     // Event handler for mouse leaving the circle
