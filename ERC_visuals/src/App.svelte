@@ -16,6 +16,7 @@
 
     <h3>Section 2: Dynamic Radar Plot - Relative Budget Per Grant Type</h3>
     <p>Dive deeper into the data with our interactive radar plot, which allows you to analyze the relative budget allocation for each grant type on a yearly basis. Select a specific year from the drop-down menu and watch as the radar plot adjusts to reveal the unique funding landscape of your chosen timeframe. This dynamic visualization offers unparalleled insights into the ERC's strategic priorities and resource allocation trends.</p>
+    <MultiPanelChart />
 
     <h3>Section 3: Heatmap - Total Budget Received Per Country</h3>
     <p>Lastly, gain a new perspective on the geographical distribution of ERC funding with our engaging heatmap. This visually striking representation highlights each country's total budget received, with a color gradient indicating the grant levels. Observe the concentration of research funding in various European countries and identify emerging patterns, disparities, and potential collaborations in the process.</p>

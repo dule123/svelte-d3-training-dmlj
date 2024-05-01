@@ -51,29 +51,29 @@
       .attr("cx", d => xScale(d.year))
       .attr("cy", d => yScale(d.value / 1000000))
       .attr("r", 4)
-      .style("opacity", 1) // Make circles visible by default
+      .style("opacity", 0) // Make circles visible by default
       .attr("pointer-events", "all") // Allow circle to capture mouse events
-    //   .on("mouseenter", handleMouseEnter)
-    //   .on("mouseleave", handleMouseLeave);
+      .on("mouseenter", handleMouseEnter)
+      .on("mouseleave", handleMouseLeave);
 
-    // // Define event handlers
-    // function handleMouseEnter(event, d) {
-    //   d3.select(this).style("opacity", 1); // Highlight hovered circle
-    //   // Find closest data point on the line
-    //   const year = d.year;
-    //   const closestDataPoint = data.map(d => {
-    //     const index = d.budgets.findIndex(b => b.year === year);
-    //     return index >= 0 ? d.budgets[index] : null;
-    //   }).filter(d => d);
-    //   // Highlight corresponding data points on other panels
-    //   panels.selectAll(".point")
-    //     .filter(d => closestDataPoint.some(c => c.year === d.year))
-    //     .style("opacity", 1);
-    // }
+    // Define event handlers
+    function handleMouseEnter(event, d) {
+      d3.select(this).style("opacity", 1); // Highlight hovered circle
+      // Find closest data point on the line
+      const year = d.year;
+      const closestDataPoint = data.map(d => {
+        const index = d.budgets.findIndex(b => b.year === year);
+        return index >= 0 ? d.budgets[index] : null;
+      }).filter(d => d);
+      // Highlight corresponding data points on other panels
+      panels.selectAll(".point")
+        .filter(d => closestDataPoint.some(c => c.year === d.year))
+        .style("opacity", 1);
+    }
 
-    // function handleMouseLeave() {
-    //   d3.selectAll(".point").style("opacity", 0); // Reset opacity for all circles
-    // }
+    function handleMouseLeave() {
+      d3.selectAll(".point").style("opacity", 0); // Reset opacity for all circles
+    }
 
 
     // Draw x-axis for each panel
