@@ -104,6 +104,8 @@ panels.selectAll(".point")
     // Reset opacity for all circles
     panels.selectAll(".point").style("opacity", 0);
   });
+
+  // test change
     // Draw x-axis for each panel
     panels.append("g")
       .attr("transform", `translate(0, ${panelHeight - margin.bottom})`)
