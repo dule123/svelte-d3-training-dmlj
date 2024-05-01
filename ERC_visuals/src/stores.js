@@ -104,4 +104,30 @@ export const totalBudgetByGrantTypeAllYears = derived(data, $data => {
   return completeData;
 });
 
+// Store for selecting a grant type in the heatmap
+export const selectedGrantType = writable('Starting Grants');
+
+// Derived store to compute the number of grants per country per grant type per year for the heatmap
+// Derived store to compute the number of grants per country per grant type per year for the heatmap
+export const heatmapData = derived([data, currentYear, selectedGrantType], ([$data, $currentYear, $selectedGrantType]) => {
+  const filteredData = $data.filter(d => d.Year === $currentYear && d.GrantType === $selectedGrantType);
+  const results = rollup(filteredData,
+    (entries) => ({
+      count: entries.length,  // Count of grants
+      totalBudget: sum(entries, d => d.Budget)  // Sum of budgets
+    }),
+    d => d.Country  // Group by country
+  );
+
+  // Convert Map to an array for easier handling in Svelte components
+  const heatmapArray = Array.from(results, ([country, data]) => ({
+    country,
+    count: data.count,
+    totalBudget: data.totalBudget
+  }));
+  console.log("Complete Data for map Chart:", heatmapArray);
+  return heatmapArray;
+});
+
+
 
