@@ -1,9 +1,9 @@
 <script>
   import RadialBarChart from './components/RadialBarChart.svelte';
   import MultiPanelChart from './components/MultiPanelChart.svelte';
+  import EuroChart from './components/EuroChart.svelte';
 
 </script>
-
 <main>
     <h1>Unveiling 17 Years of ERC Grants: A Data-Driven Exploration</h1>
     <h2>Subtitle: Discover the trends, patterns, and stories behind the European Research Council's funding initiatives from 2007 to 2023.</h2>
