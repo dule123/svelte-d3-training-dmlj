@@ -75,7 +75,35 @@
       d3.selectAll(".point").style("opacity", 0); // Reset opacity for all circles
     }
 
+// Add legend text above the circles for each panel
+panels.selectAll(".point")
+  .on("mouseenter", function(event, d) {
+    const year = d.year;
+    const value = d.value;
+    
+    // Add legend text above the circle in all panels
+    container.selectAll(".legend").remove(); // Remove existing legend text
+    panels.append("text")
+      .attr("class", "legend")
+      .attr("x", xScale(year) + 10)
+      .attr("y", yScale(value / 1000000) - 10) // Adjust y position as needed
+      .attr("text-anchor", "middle")
+      .attr("fill", "black")
+      .attr("font-size", "12px")
+      .text(`Year: ${year}\nBudget: ${value}`);
 
+    // Highlight corresponding data points on all panels
+    panels.selectAll(".point")
+      .filter(d => d.year === year)
+      .style("opacity", 1);
+  })
+  .on("mouseleave", function() {
+    // Remove legend text on mouse leave
+    container.selectAll(".legend").remove();
+    
+    // Reset opacity for all circles
+    panels.selectAll(".point").style("opacity", 0);
+  });
     // Draw x-axis for each panel
     panels.append("g")
       .attr("transform", `translate(0, ${panelHeight - margin.bottom})`)
@@ -113,6 +141,8 @@
       .attr("text-anchor", "middle")
       .attr("font-weight", "bold")
       .text(d => d.grantType);
+
+
 }
 
 
@@ -133,9 +163,6 @@ onMount(async () => {
 $: panelData = $totalBudgetByGrantTypeAllYears;
 
 </script>
-
-
-
 
 
 <svg id="multiPanelChart" width="600" height="400"></svg>
