@@ -55,3 +55,27 @@ export const budgetByGrantType = derived([data, currentYear], ([$data, $currentY
   console.log("Complete Data for Radar Chart:", completeData); // Final data structure for the chart
   return completeData;
 });
+
+// Derived store to compute the maximum sum of grants per grant type across all years
+export const maxBudget = derived(data, $data => {
+  let maxBudget = 0;
+
+  // Group the data by year and grant type
+  const groupedData = rollup($data, 
+    v => sum(v, d => d.Budget), // Compute sum of budgets within each group
+    d => d.Year, // Group by year
+    d => d.GrantType // Then by grant type
+  );
+
+  // Loop through the grouped data to find the maximum sum of grants for each year and grant type
+  groupedData.forEach((yearData, year) => {
+    yearData.forEach((budget, grantType) => {
+      maxBudget = Math.max(maxBudget, budget);
+    });
+  });
+
+  console.log("maxBudget we calculated is: ", maxBudget); //
+
+  return maxBudget;
+});
+
