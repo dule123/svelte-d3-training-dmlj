@@ -79,3 +79,29 @@ export const maxBudget = derived(data, $data => {
   return maxBudget;
 });
 
+// Derived store to compute the total budget per Grant Type across all years for each panel
+export const totalBudgetByGrantTypeAllYears = derived(data, $data => {
+  // Group the data by Grant Type
+  const budgetData = rollup($data, 
+    v => sum(v, d => d.Budget), // Compute sum of budgets within each group
+    d => d.GrantType, // Group by grant type
+    d => d.Year // Then by year
+  );
+
+  // Create an array of objects for each grant type containing data for each year
+  const completeData = allGrantTypes.map(type => {
+    const grantTypeData = [];
+    budgetData.get(type)?.forEach((value, year) => {
+      grantTypeData.push({ year, value });
+    });
+    // Sort the grantTypeData array by year
+    grantTypeData.sort((a, b) => a.year - b.year);
+    return { grantType: type, budgets: grantTypeData };
+  });
+
+  console.log("Complete Data for Panel Chart:", completeData);
+  
+  return completeData;
+});
+
+
