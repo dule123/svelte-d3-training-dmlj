@@ -33,7 +33,6 @@
       .attr("class", "panel")
       .attr("transform", (d, i) => `translate(${(i % 3) * panelWidth}, ${Math.floor(i / 3) * panelHeight})`);
 
-    // Draw lines for each grant type
     panels.selectAll("path")
       .data(d => [d]) // Ensure each grant type data object is wrapped in an array
       .join("path")
@@ -43,6 +42,54 @@
       .attr("fill", "none")
       .attr("stroke", (d, i) => colorScale(i))
       .attr("stroke-width", 2);
+
+    // Add invisible circles to each data point
+    panels.selectAll(".point")
+      .data(d => d.budgets)
+      .join("circle")
+      .attr("class", "point")
+      .attr("cx", d => xScale(d.year))
+      .attr("cy", d => yScale(d.value / 1000000))
+      .attr("r", 4)
+      .style("opacity", 0) // Make circles visible by default
+      .attr("pointer-events", "all") // Allow circle to capture mouse events
+      .on("mouseenter", handleMouseEnter)
+      .on("mouseleave", handleMouseLeave);
+
+    // Define event handlers
+    function handleMouseEnter(event, d) {
+      d3.select(this).style("opacity", 1); // Highlight hovered circle
+
+      // Find closest data point on the line
+      const year = d.year;
+      const closestDataPoint = data.map(d => {
+        const index = d.budgets.findIndex(b => b.year === year);
+        return index >= 0 ? d.budgets[index] : null;
+      }).filter(d => d);
+
+      // Highlight corresponding data points on other panels
+      panels.selectAll(".point")
+        .filter(d => closestDataPoint.some(c => c.year === d.year))
+        .style("opacity", 1);
+    }
+      // Add legend text above the circle
+      d3.select(this.parentNode)
+        .append("text")
+        .attr("class", "legend")
+        .attr("x", d => xScale(d.year))
+        .attr("y", d => yScale(d.value / 1000000) - 10) // Place text slightly above the circle
+        .attr("text-anchor", "middle")
+        .attr("fill", "black")
+        .attr("font-size", "12px")
+        .text(`Year: ${d.year}\nBudget: ${d.value}`);
+    }
+
+
+    // Event handler for mouse leaving the circle
+    function handleMouseLeave() {
+      d3.selectAll(".point").style("opacity", 0); // Reset opacity for all circles
+    }
+
 
     // Draw x-axis for each panel
     panels.append("g")
@@ -56,10 +103,6 @@
       .call(d3.axisLeft(yScale)
         .tickFormat(d => `${d}`)
         .ticks(yScale.domain()[1] / 200)); // Set number of ticks based on domain range
-    // Draw y-axis for each panel
-    // panels.append("g")
-    //   .attr("transform", `translate(${margin.left}, 0)`)
-    //   .call(d3.axisLeft(yScale).tickFormat(d => `${d}`)); // Format y-axis ticks to display in millions
 
     // Add y-axis label to the leftmost panels
     if (panels.nodes().length >= 4) {
@@ -71,10 +114,8 @@
         .attr("text-anchor", "middle")
         .attr("transform", "rotate(-90)")
         .attr("font-weight", "bold")
-        .text("Total budget, in M€");
-
-}
-
+        .text("Total budget, in M€");   
+    }
 
     // Add titles for each panel
     panels.append("text")
