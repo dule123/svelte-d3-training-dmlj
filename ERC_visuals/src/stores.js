@@ -108,7 +108,6 @@ export const totalBudgetByGrantTypeAllYears = derived(data, $data => {
 export const selectedGrantType = writable('Starting Grants');
 
 // Derived store to compute the number of grants per country per grant type per year for the heatmap
-// Derived store to compute the number of grants per country per grant type per year for the heatmap
 export const heatmapData = derived([data, currentYear, selectedGrantType], ([$data, $currentYear, $selectedGrantType]) => {
   const filteredData = $data.filter(d => d.Year === $currentYear && d.GrantType === $selectedGrantType);
   const results = rollup(filteredData,
@@ -129,5 +128,9 @@ export const heatmapData = derived([data, currentYear, selectedGrantType], ([$da
   return heatmapArray;
 });
 
+// Function to update the current year
+export function setYear(year) {
+  currentYear.set(year);
+}
 
 

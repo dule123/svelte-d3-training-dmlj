@@ -1,39 +1,46 @@
 <script>
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import * as d3 from 'd3';
   import { feature } from 'topojson-client';
-  import { heatmapData } from '../stores';
+  import { heatmapData, currentYear } from '../stores';
+  import { setYear } from '../stores'; // Import setYear function from stores.js
 
   let svg;
+  let width = 975;
+  let height = 610;
+  let svgElement;
+  let projection;
+  let path; // Define path here so it can be accessed globally
+  let zoom;
+  let g;
+
+  // Create color scale for heatmap
+  const colorScale = d3.scaleSequential(d3.interpolateOrRd);
 
   onMount(async () => {
-    const width = 975;
-    const height = 610;
-    const svgElement = d3.select(svg)
+    svgElement = d3.select(svg)
       .attr("viewBox", [0, 0, width, height])
       .style("max-width", "100%")
       .style("height", "auto");
 
-    const projection = d3.geoMercator()
-      .scale(150)
+    projection = d3.geoMercator()
+      .scale(250)
       .translate([width / 2, height / 2]);
 
-    const path = d3.geoPath().projection(projection);
-    const zoom = d3.zoom()
+    path = d3.geoPath().projection(projection); // Move path definition here
+
+    zoom = d3.zoom()
       .scaleExtent([1, 8])
       .on("zoom", zoomed);
 
     try {
-      const response = await fetch("/data/europe.topojson");
+      const response = await fetch("https://raw.githubusercontent.com/dule123/svelte-d3-training-dmlj/main/ERC_visuals/public/data/europe.topojson");
       if (!response.ok) throw new Error('Failed to fetch Europe TopoJSON: ' + response.status);
       const europe = await response.json();
 
-      console.log("TopoJSON loaded, keys available:", Object.keys(europe.objects)); // Log to check keys
+      const countries = feature(europe, europe.objects.europe).features;
 
-      // Assuming the correct key is 'countries' based on your initial structure post
-      const countries = feature(europe, europe.objects.countries).features;
-
-      const g = svgElement.append("g");
+      g = svgElement.append("g");
 
       g.selectAll("path")
         .data(countries)
@@ -49,7 +56,34 @@
     } catch (error) {
       console.error("Error loading or processing map data:", error);
     }
+
+    // Subscribe to heatmap data changes
+    heatmapData.subscribe(updateHeatmap);
+    currentYear.subscribe(updateYear);
   });
+
+  onDestroy(() => {
+    // Clean up event listeners
+    svgElement.on(".zoom", null);
+  });
+
+  function updateHeatmap(data) {
+    // Update color scale domain based on the heatmap data
+    const maxCount = d3.max(data, d => d.count);
+    colorScale.domain([0, maxCount]);
+    
+    // Update map colors based on heatmap data
+    g.selectAll("path")
+      .attr("fill", d => {
+        const countryData = data.find(entry => entry.country === d.properties.NAME);
+        return countryData ? colorScale(countryData.count) : "#ccc";
+      });
+  }
+
+  function updateYear(newYear) {
+    // Call setYear function from stores.js to update the current year
+    setYear(newYear);
+  }
 
   function clicked(event, d) {
     const bounds = path.bounds(d);
@@ -81,10 +115,38 @@
 
 <svg bind:this={svg}></svg>
 
+<div class="legend">
+  <div class="gradient"></div>
+  <div class="labels">
+    <span>Less Grants</span>
+    <span>More Grants</span>
+  </div>
+</div>
+
+<input type="range" min="2021" max="2025" bind:value={$currentYear} />
+
 <style>
   svg {
-    width: 100%;
+    width: 70%;
     height: auto;
-    border: 1px solid black; 
+    border: 1px solid black;
+  }
+
+  .legend {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    width: 70%;
+  }
+
+  .gradient {
+    background: linear-gradient(to right, #fff, #f00);
+    height: 20px;
+    width: 100%;
+  }
+
+  .labels {
+    display: flex;
   }
 </style>
